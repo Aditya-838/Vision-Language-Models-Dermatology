@@ -54,3 +54,59 @@ def compute_text_metrics(mode_b_csv, output_csv=None):
 def create_anthropic_client():
     import anthropic
     return anthropic.Anthropic(api_key=require_env("ANTHROPIC_API_KEY"))
+
+
+def encode_image(image_path, max_size_mb=4):
+    """Encode images using the same resizing and JPEG fallback as the notebook."""
+    import base64
+    import io
+    from PIL import Image
+
+    image = Image.open(image_path).convert("RGB")
+    image.thumbnail((1568, 1568), Image.LANCZOS)
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=85)
+    data = buffer.getvalue()
+    if len(data) > max_size_mb * 1024 * 1024:
+        buffer = io.BytesIO()
+        image.save(buffer, format="JPEG", quality=60)
+        data = buffer.getvalue()
+    return base64.standard_b64encode(data).decode("utf-8")
+
+
+def judge_report(client, image_path, gt_disease, gt_descriptors, gt_body_part, generated_text):
+    """Use the archived rubric and notebook's Claude Haiku request parameters."""
+    import json
+
+    prompt = JUDGE_RUBRIC.format(gt_disease=gt_disease, gt_descriptors=gt_descriptors,
+        gt_body_part=gt_body_part, generated_text=generated_text)
+    response = client.messages.create(model="claude-haiku-4-5-20251001", max_tokens=500,
+        messages=[{"role": "user", "content": [{"type": "image", "source": {"type": "base64",
+        "media_type": "image/jpeg", "data": encode_image(image_path)}}, {"type": "text", "text": prompt}]}])
+    return json.loads(re.sub(r"```json|```", "", response.content[0].text.strip()).strip())
+
+
+def run_claude_judge(mode_b_results, sample, client, output_csv=None):
+    """Notebook judge loop; preserves failed-image handling without retries."""
+    import time
+    from tqdm import tqdm
+
+    results, failed = [], []
+    for _, row in tqdm(mode_b_results.iterrows(), total=len(mode_b_results), desc="Claude Judge"):
+        try:
+            image_path = sample[sample["image_name"] == row["image_name"]]["image_path"].values[0]
+            scores = judge_report(client, image_path, row["gt_disease"], row["gt_descriptors"],
+                row["gt_body_part"], row["generated_text"])
+            results.append({"image_name": row["image_name"], "main_class": row["main_class"],
+                "gt_disease": row["gt_disease"], "fitzpatrick": row["fitzpatrick"],
+                "generated_text": row["generated_text"], "disease_score": scores["disease_score"],
+                "visual_score": scores["visual_score"], "coherence_score": scores["coherence_score"],
+                "comments": scores.get("comments", "")})
+            time.sleep(0.5)
+        except Exception as exc:
+            print(f"Failed: {row['image_name']} — {exc}")
+            failed.append(row["image_name"])
+    results_frame = pd.DataFrame(results)
+    if output_csv:
+        results_frame.to_csv(output_csv, index=False)
+    return results_frame, failed
