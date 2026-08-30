@@ -1,48 +1,19 @@
 # Vision-Language Models for Multimodal Dermatology
 
-Evaluation of two open-source Vision-Language Models — **MedGemma-1.5-4B** and **Qwen2.5-VL-7B-Instruct** — for dermatological disease classification and clinical report generation on the **DermaCon-IN** dataset, with a focus on dermatology across Fitzpatrick Skin Types 3–6.
+Evaluation of two open-source Vision-Language Models — **MedGemma-1.5-4B** and **Qwen2.5-VL-7B-Instruct** — for dermatological disease classification and clinical report generation on the **DermaCon-IN** dataset, with a focus on darker skin tones (Fitzpatrick Skin Types 3–6).
 
 ## Overview
 
-Most dermatology AI benchmarks are dominated by lighter skin tones, raising concerns about model reliability across underrepresented populations. This project evaluates whether medical-domain pretraining in **MedGemma** provides an advantage over the general-purpose **Qwen2.5-VL** model for dermatological image understanding.
+Most dermatology AI benchmarks are dominated by lighter skin tones (FST 1–2), raising concerns about model reliability on underrepresented populations. This project evaluates whether **medical-domain pretraining** in MedGemma transfers better than **general-purpose pretraining** in Qwen2.5-VL for dermatological image understanding.
 
-Both models were evaluated in:
-- Zero-shot settings
-- QLoRA fine-tuned settings
-- Structured disease classification
-- Free-text clinical report generation
-- Fitzpatrick skin-type performance analysis
+The two models were evaluated in both **zero-shot** and **QLoRA fine-tuned** settings.
 
-The repository contains the research implementation corresponding to the completed experiments.
+- **Models:** MedGemma-1.5-4B and Qwen2.5-VL-7B-Instruct
+- **Tasks:** Structured disease classification and free-text clinical report generation
+- **Classification levels:** Main class, sub-class, and disease label
+- **Evaluation:** Accuracy, precision, recall, F1, Fitzpatrick skin-tone analysis, ROUGE, METEOR, BLEU, and LLM-as-judge scoring using Claude Haiku
 
-## Models
-
-- **MedGemma-1.5-4B**
-- **Qwen2.5-VL-7B-Instruct**
-
-## Research Tasks
-
-### Structured Classification
-
-Disease prediction was evaluated at three levels:
-- Main class
-- Sub-class
-- Disease label
-
-Performance was evaluated using accuracy, precision, recall, and F1-based metrics.
-
-### Clinical Report Generation
-
-The models were also evaluated on free-text clinical report generation using:
-- ROUGE-1
-- ROUGE-L
-- METEOR
-- BLEU
-- LLM-as-judge evaluation using Claude Haiku
-
-### Fairness Analysis
-
-Performance was analysed across Fitzpatrick Skin Types (FST) 3–6 to assess differences in model performance across darker skin tones.
+The experiments were completed as part of the associated MSc research. This repository provides the organized implementation corresponding to those experiments.
 
 ## Repository Structure
 
@@ -56,6 +27,7 @@ Performance was analysed across Fitzpatrick Skin Types (FST) 3–6 to assess dif
 │   └── evaluation/
 │       ├── classification.py
 │       └── clinical_reports.py
+│
 ├── qwen/
 │   ├── inference/
 │   │   ├── zeroshot.py
@@ -65,17 +37,29 @@ Performance was analysed across Fitzpatrick Skin Types (FST) 3–6 to assess dif
 │   └── evaluation/
 │       ├── classification.py
 │       └── clinical_reports.py
+│
 ├── prompts/
+│   ├── structured_classification.txt
+│   ├── zero_shot_free_text_system.txt
+│   ├── fine_tuning_validation.txt
+│   ├── clinical_report_system.txt
+│   ├── clinical_report_user.txt
+│   └── claude_judge_rubric.txt
+│
 ├── eval_configs/
+│   ├── medgemma.json
+│   └── qwen.json
+│
 ├── demo/
 │   └── demo.py
+│
 ├── research_utils.py
 ├── environment.yml
 ├── README.md
 └── .gitignore
 ```
 
-The repository is intentionally organized around the two model implementations rather than a large shared software framework.
+The repository is organized by model and research function to keep the MedGemma and Qwen implementations separate while avoiding an unnecessarily large software architecture.
 
 ## Key Results
 
@@ -95,13 +79,15 @@ The repository is intentionally organized around the two model implementations r
 | Sub-Class | 23.35 → 58.37 | 16.27 → 49.09 |
 | Disease Label | 16.17 → 40.86 | 11.20 → 34.16 |
 
-### Fine-tuned Models vs. Swin-B Baseline
+### Fine-tuned vs. Swin-B Baseline (Main-class Level)
 
 | Model | Accuracy | F1 | Precision | Recall |
 |---|---:|---:|---:|---:|
 | Swin-B (dataset baseline) | 70.41 | 69.69 | 69.83 | 69.83 |
-| MedGemma-1.5-4B | 68.52 | 66.84 | 67.51 | 68.52 |
-| Qwen2.5-VL-7B | 57.89 | 55.35 | 58.89 | 57.89 |
+| MedGemma-1.5-4B (fine-tuned) | 68.52 | 66.84 | 67.51 | 68.52 |
+| Qwen2.5-VL-7B (fine-tuned) | 57.89 | 55.35 | 58.89 | 57.89 |
+
+MedGemma's fine-tuned main-class accuracy was within approximately 1.9 percentage points of the Swin-B dataset baseline.
 
 ### Fairness Across Fitzpatrick Skin Types
 
@@ -112,9 +98,9 @@ Accuracy (%) for zero-shot → fine-tuned models:
 | FST 3 | 36.67 → 65.56 | 22.59 → 58.15 |
 | FST 4 | 24.95 → 71.73 | 21.21 → 59.88 |
 | FST 5 | 29.00 → 66.17 | 30.48 → 54.28 |
-| FST 6 | 8.00 → 64.00 | 16.00 → 56.00 |
+| FST 6 (darkest) | 8.00 → 64.00 | 16.00 → 56.00 |
 
-FST 6 showed the lowest zero-shot accuracy for both models and substantial improvement after fine-tuning.
+FST 6 had the lowest zero-shot accuracy for both models and showed substantial improvement after fine-tuning.
 
 ### Free-text Clinical Report Quality
 
@@ -135,11 +121,9 @@ Evaluation was performed on 70 images using an LLM-based judge.
 | METEOR | 20.19 | 14.21 |
 | BLEU | 0.68 | 0.56 |
 
-The relatively low lexical scores reflect the mismatch between short structured pseudo-references and free-form generated clinical text.
+Low lexical scores reflect the mismatch between short structured pseudo-references and free-form generated text.
 
-## Training Configuration
-
-Both models were fine-tuned using QLoRA.
+## Training Configuration (QLoRA)
 
 | Parameter | Value |
 |---|---|
@@ -156,35 +140,32 @@ Both models were fine-tuned using QLoRA.
 
 ## Platform
 
-The completed GPU experiments were run on the **Modal** cloud platform.
+All completed GPU experiments were run on the **Modal** cloud platform.
 
-- MedGemma: NVIDIA H100 80GB
-- Qwen: NVIDIA H200 150GB
+- **MedGemma:** NVIDIA H100 80GB
+- **Qwen:** NVIDIA H200 150GB
 
 ## Dataset
 
-**DermaCon-IN** is a private dermatology dataset collected from South Indian outpatient clinics.
+DermaCon-IN is a **private dataset** from South Indian outpatient clinics — 5,450 clinical images, 245 disease labels, 7 main classes, 18 sub-classes, and Fitzpatrick Skin Types 3–6.
 
-The dataset contains:
-- 5,450 clinical images
-- 245 disease labels
-- 7 main classes
-- 18 sub-classes
-- Fitzpatrick Skin Types 3–6
+- Request access from the original authors: https://arxiv.org/abs/2506.06099
+- NeurIPS 2025 paper: https://neurips.cc/virtual/2025/poster/121561
 
-The dataset and associated clinical images are **not included in this repository**.
+> Dataset images and VQA JSON files are not included in this repository.
 
-Access to the original dataset should be obtained from the dataset authors.
+## Setup
 
-## Repository Usage
+Clone the repository and install the required environment:
 
-This repository provides the organized research implementation corresponding to the completed thesis experiments.
+```bash
+git clone <repository-url>
+cd Vision-Language-Models-Dermatology
+```
 
-The Python modules under `medgemma/` and `qwen/` contain the extracted model inference, training, and evaluation implementations.
+The provided `environment.yml` describes the environment used by the implementation.
 
-The original experimental notebooks are maintained separately as the archival record of the experiments and are not part of this public code repository.
-
-Credentials should be supplied through environment variables rather than hard-coded in source files.
+For workflows requiring external credentials, set them as environment variables rather than hard-coding them:
 
 ```bash
 export HF_TOKEN=your_huggingface_token
@@ -193,6 +174,8 @@ export ANTHROPIC_API_KEY=your_claude_key
 ```
 
 `ANTHROPIC_API_KEY` is only required for the LLM-based clinical report evaluation.
+
+The private DermaCon-IN dataset and model checkpoints are not included in this repository.
 
 ## Research Context
 
