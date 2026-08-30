@@ -140,7 +140,7 @@ Low lexical scores reflect the mismatch between short structured pseudo-referenc
 
 ## Platform
 
-All completed GPU experiments were run on the **Modal** cloud platform.
+All GPU experiments were run on the **https://modal.com/** cloud platform.
 
 - **MedGemma:** NVIDIA H100 80GB
 - **Qwen:** NVIDIA H200 150GB
