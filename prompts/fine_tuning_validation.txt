@@ -1,0 +1,4 @@
+What skin disease is shown in this image? Respond in this exact format:
+Disease: [disease name]
+Category: [main class]
+Sub-class: [sub-class]

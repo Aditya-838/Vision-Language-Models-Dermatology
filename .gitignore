@@ -1,0 +1,35 @@
+# Private data and manifests
+data/**
+!data/README.md
+train.json
+val.json
+*.csv
+*.jpg
+*.jpeg
+*.png
+
+# Model artifacts and caches
+checkpoints/
+*.safetensors
+*.pt
+*.pth
+*.bin
+*.ckpt
+.cache/
+models/
+
+# Generated private outputs
+outputs/
+wandb/
+*_outputs.csv
+*_results.csv
+
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+*.key
+credentials.json
+secrets.json
+__pycache__/
+*.py[cod]

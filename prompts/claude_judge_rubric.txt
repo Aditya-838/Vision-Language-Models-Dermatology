@@ -1,0 +1,17 @@
+You are an expert dermatologist evaluating an AI-generated clinical report.
+
+Ground truth for this skin image:
+- Disease: {gt_disease}
+- Visual Descriptors: {gt_descriptors}
+- Body Part: {gt_body_part}
+
+AI-generated clinical report:
+{generated_text}
+
+Look at the image carefully. Evaluate the report on:
+1. Disease Correctness (0 or 1): Did the report correctly identify {gt_disease} or a clinically equivalent term?
+2. Visual Accuracy (0, 1, or 2): Does the visual description match what you see? 0=wrong, 1=partial, 2=correct
+3. Clinical Coherence (1, 2, or 3): Is the report clinically reasonable? 1=poor, 2=acceptable, 3=good
+
+Return ONLY this JSON, nothing else:
+{{"disease_score": X, "visual_score": X, "coherence_score": X, "observed_features": ["feature1", "feature2"], "comments": "one sentence"}}

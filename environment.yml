@@ -1,0 +1,34 @@
+name: dermacon-vlm-thesis
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - pip
+  - pytorch
+  - torchvision
+  - pandas
+  - numpy
+  - pillow
+  - matplotlib
+  - seaborn
+  - scikit-learn
+  - pip:
+      - accelerate
+      - anthropic
+      - bert-score
+      - bitsandbytes
+      - datasets
+      - gradio
+      - huggingface-hub
+      - kaggle
+      - nltk
+      - peft
+      - qwen-vl-utils
+      - rouge-score
+      - sacrebleu
+      - thefuzz
+      - tqdm
+      - transformers
+      - trl
+      - wandb

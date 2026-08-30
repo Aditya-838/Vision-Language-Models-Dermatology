@@ -1,0 +1,19 @@
+{
+  "model_id": "google/medgemma-1.5-4b-it",
+  "paths": {
+    "data_root": "${DATA_ROOT}",
+    "train_manifest": "${TRAIN_MANIFEST}",
+    "val_manifest": "${VAL_MANIFEST}",
+    "metadata_csv": "${METADATA_CSV}",
+    "dataset_0": "${DATASET_0}",
+    "dataset_1": "${DATASET_1}",
+    "output_dir": "${OUTPUT_DIR}",
+    "checkpoint_dir": "${CHECKPOINT_DIR}",
+    "adapter_path": "${ADAPTER_PATH}"
+  },
+  "quantization": {"load_in_4bit": true, "bnb_4bit_use_double_quant": true, "bnb_4bit_quant_type": "nf4", "bnb_4bit_compute_dtype": "bfloat16", "bnb_4bit_quant_storage": "bfloat16", "attn_implementation": "flash_attention_2"},
+  "lora": {"rank": 16, "alpha": 32, "dropout": 0.05, "target_modules": "all-linear", "task_type": "CAUSAL_LM"},
+  "training": {"epochs": 2, "batch_size": 1, "gradient_accumulation_steps": 4, "learning_rate": 0.0002, "scheduler": "cosine", "warmup_ratio": 0.03, "max_grad_norm": 0.3, "image_size": [896, 896]},
+  "inference": {"structured_max_tokens": 100, "free_text_max_tokens": 300, "clinical_report_max_tokens": 250, "do_sample": false, "checkpoint_every": 100},
+  "evaluation": {"fitzpatrick_groups": ["FST 3", "FST 4", "FST 5", "FST 6"], "clinical_report_samples_per_class": 10, "sampling_seed": 42}
+}

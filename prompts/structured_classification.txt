@@ -1,0 +1,4 @@
+Examine this skin image. Respond in exactly this format:
+Disease: [disease name]
+Category: [disease category]
+Do not add any other text.
